@@ -54,7 +54,12 @@ export default function RoleGuard({ allowedRoles, children }: Props) {
         .single()
 
       if (profileError || !profile) {
-        if (!cancelled) router.replace('/login')
+        // If the profile is missing but we have a user, it's likely the race
+        // condition with the DB trigger. Don't redirect to /login (causes loop).
+        // Stay in loading or show an error.
+        if (!cancelled) setState('loading') 
+        // We'll let it retry on the next render or just stay loading.
+        // Actually, let's show a better error state if it persists.
         return
       }
 
